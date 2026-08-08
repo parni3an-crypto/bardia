@@ -1,0 +1,208 @@
+<html>
+<head>
+<title> سرگرمی </title>
+<style>
+    body {
+        background-color: rgba(72, 114, 119, 0.32);
+        color: white;
+        font-family: Tahoma, Arial, sans-serif;
+        text-align: center;
+        margin-top: 20px;
+    }
+    #gameArea {
+        width: 600px;
+        height: 400px;
+        margin: 0 auto;
+        background-color:rgba(219, 201, 151, 0.73) ;
+        border: 2px solid white;
+        position: relative;
+        font-size: 0; /* برای حذف فاصله بین div ها */
+        overflow: hidden; /* برای اطمینان از اینکه سلول ها بیرون نمی زنند */
+    }
+    .cell {
+        width: 10px;
+        height: 10px;
+        display: inline-block; /* باعث میشه کنار هم قرار بگیرند */
+        vertical-align: top; /* برای هم تراز شدن صحیح */
+    }
+    .snake {
+        background-color:rgba(34, 135, 175, 0.68) ;
+    }
+    .food {
+        background-color:rgb(10, 12, 161) ;
+    }
+</style>
+</head>
+<body>
+
+<h2 style="color:rgb(26, 110, 121)"> بازی پرنیان و بردیا  </h2>
+<div id="score">امتیاز: 0</div>
+<div id="gameArea"></div>
+
+<script type="text/javascript">
+(function() {
+    var widthCells = 60;  // 600px / 10px per cell
+    var heightCells = 40; // 400px / 10px per cell
+    var gameArea = document.getElementById('gameArea');
+    var scoreElem = document.getElementById('score');
+    var cells = []; // این آرایه در این نسخه استفاده نمیشه، مستقیما با DOM کار می‌کنیم
+    var snake = [{x:30, y:20}]; // موقعیت اولیه مار (بدنه مار در آرایه ذخیره میشه)
+    var direction = 'right'; // جهت اولیه حرکت
+    var food = {}; // موقعیت غذا
+    var score = 0;
+    var gameSpeed = 100; // سرعت بازی (میلی‌ثانیه، کمتر یعنی سریع‌تر)
+    var timer;
+    var grow = false; // پرچمی برای نشانه گذاری اینکه مار باید رشد کند
+
+    // ایجاد سلول‌های بازی با div
+    function createGrid() {
+        // پاک کردن محتوای قبلی gameArea
+        gameArea.innerHTML = ''; 
+        
+        // ایجاد یک رشته HTML برای ساخت سریع گرید
+        var gridHtml = '';
+        for(var i=0; i < heightCells; i++) {
+            for(var j=0; j < widthCells; j++) {
+                // هر div یک سلول بازی است
+                gridHtml += '<div class="cell" id="cell-' + j + '-' + i + '"></div>';
+            }
+        }
+        gameArea.innerHTML = gridHtml;
+    }
+
+    // قرار دادن غذا در محل تصادفی
+    function placeFood() {
+        var x = Math.floor(Math.random() * widthCells);
+        var y = Math.floor(Math.random() * heightCells);
+
+        // اطمینان از اینکه غذا روی بدن مار قرار نگیرد
+        for(var i=0; i < snake.length; i++) {
+            if(snake[i].x === x && snake[i].y === y) {
+                // اگر روی مار قرار گرفت، دوباره امتحان کن
+                return placeFood(); 
+            }
+        }
+        food = {x: x, y: y};
+        // کلاس غذا را به سلول مربوطه اضافه کن
+        var foodCell = document.getElementById('cell-' + food.x + '-' + food.y);
+        if (foodCell) {
+            foodCell.className = 'cell food';
+        }
+    }
+
+    // گرفتن مرجع یک سلول بازی بر اساس مختصات x و y
+    function getCell(x, y) {
+        return document.getElementById('cell-' + x + '-' + y);
+    }
+
+    // رسم مار و غذا در صفحه بازی
+    function draw() {
+        // پاک کردن سلول‌های مار از فریم قبل (به جز قسمت‌هایی که غذا خوردند و باید بمونن)
+        // این کار با حذف کلاس snake از تمام سلول‌های مار انجام میشه
+        for(var i=0; i < snake.length; i++) {
+            var seg = snake[i];
+            var cell = getCell(seg.x, seg.y);
+            if (cell) {
+                cell.className = 'cell'; // پاک کردن کلاس snake
+            }
+        }
+
+        // اضافه کردن سر مار به اول آرایه snake
+        var head = snake[0];
+        var newHead = {x: head.x, y: head.y};
+
+        // حرکت مار بر اساس جهت
+        if(direction === 'right') newHead.x++;
+        else if(direction === 'left') newHead.x--;
+        else if(direction === 'up') newHead.y--;
+        else if(direction === 'down') newHead.y++;
+
+        // بررسی برخورد با دیوارها
+        if(newHead.x < 0 || newHead.x >= widthCells || newHead.y < 0 || newHead.y >= heightCells) {
+            return gameOver(); // پایان بازی
+        }
+
+        // بررسی برخورد با بدن خودش
+        for(var i=0; i < snake.length; i++) {
+            if(snake[i].x === newHead.x && snake[i].y === newHead.y) {
+                return gameOver(); // پایان بازی
+            }
+        }
+        
+        // اضافه کردن سر جدید به ابتدای آرایه مار
+        snake.unshift(newHead);
+
+        // بررسی خوردن غذا
+        if(newHead.x === food.x && newHead.y === food.y) {
+            score += 10; // افزایش امتیاز
+            scoreElem.innerHTML = 'امتیاز: ' + score;
+            grow = true; // فعال کردن پرچم رشد
+            placeFood(); // قرار دادن غذای جدید
+        } else {
+            // اگر غذا نخورده، آخرین قسمت مار را حذف کن (این باعث میشه سایزش ثابت بمونه)
+            snake.pop();
+            grow = false; // غیرفعال کردن پرچم رشد
+        }
+        
+        // رسم مار در موقعیت جدیدش
+        for(var i=0; i < snake.length; i++) {
+            var seg = snake[i];
+            var cell = getCell(seg.x, seg.y);
+            if (cell) {
+                cell.className = 'cell snake';
+            }
+        }
+    }
+
+    // تابع پایان بازی
+    function gameOver() {
+        clearInterval(timer); // توقف تایمر بازی
+        alert('بازی تمام شد! امتیاز شما: ' + score); // نمایش امتیاز نهایی
+        
+        // ریست کردن بازی
+        resetGame();
+    }
+
+    // ریست کردن تنظیمات بازی برای شروع مجدد
+    function resetGame() {
+        snake = [{x:30, y:20}]; // موقعیت اولیه مار
+        direction = 'right'; // جهت اولیه
+        score = 0; // صفر کردن امتیاز
+        scoreElem.innerHTML = 'امتیاز: 0';
+        grow = false; // غیرفعال کردن رشد
+        placeFood(); // قرار دادن غذا
+        draw(); // رسم اولیه
+        
+        // شروع مجدد تایمر بازی
+        timer = setInterval(draw, gameSpeed);
+    }
+
+    // کنترل جهت حرکت با کلیدهای کیبورد
+    document.onkeydown = function(e) {
+        e = e || window.event; // اطمینان از وجود event
+        var key = e.keyCode; // دریافت کد کلید فشرده شده
+
+        // کلیدهای جهت نما: چپ(37), بالا(38), راست(39), پایین(40)
+        // شرط جلوگیری از حرکت معکوس مار به خودش
+        if(key === 37 && direction !== 'right') {
+            direction = 'left';
+        }
+        else if(key === 38 && direction !== 'down') {
+            direction = 'up';
+        }
+        else if(key === 39 && direction !== 'left') {
+            direction = 'right';
+        }
+        else if(key === 40 && direction !== 'up') {
+            direction = 'down';
+        }
+    };
+
+    // راه اندازی اولیه بازی
+    createGrid(); // ساخت ساختار بصری بازی
+    resetGame(); // تنظیم اولیه بازی و شروع اولین دور
+})();
+</script>
+
+</body>
+</html>

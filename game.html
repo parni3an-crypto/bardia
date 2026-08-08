@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>   گیم پلی  </title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #887fdd62, #34a1b488, #7092b3b4);
+            background-attachment: fixed;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(0, 255, 255, 0.1), transparent 40%),
+                        radial-gradient(circle at 80% 70%, rgba(255, 0, 255, 0.1), transparent 40%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(42, 94, 94, 0.5);
+            background: linear-gradient(to right, #23787c, #245886);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 50px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .game-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .game-card:hover {
+            transform: translateY(-15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 15px 45px rgba(0, 255, 255, 0.2);
+        }
+
+        /* اصلاح شده برای جلوگیری از کات شدن عکس */
+        .game-image-wrapper {
+            width: 100%;
+            height: 220px; 
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.4); /* پس‌زمینه تیره برای پر کردن جاهای خالی عکس */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* عکس رو کامل نشون میده و کات نمیشه */
+            transition: transform 0.5s ease;
+        }
+
+        .game-card:hover .game-image-wrapper img {
+            transform: scale(1.05);
+        }
+
+        .game-info {
+            padding: 25px;
+            text-align: center;
+        }
+
+        .game-info h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.5rem;
+            color: rgba(55, 135, 139, 0.54);
+        }
+
+        .game-info p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .game-card {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .game-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎮 Game Memories</h1>
+        <p class="subtitle"> خاطرات بهترین پلیر های تاریخ ( از اخر )</p>
+
+        <div class="game-grid">
+            
+            <!-- کارت بازی ۱ -->
+            <div class="game-card">
+                <div class="game-image-wrapper">
+                    <img src="C1.jpg" alt="Game 1">
+                </div>
+                <div class="game-info">
+                    <h3> کالاف</h3>
+                    <p>  بهترین دوئل</p>
+                </div>
+            </div>
+
+            <!-- کارت بازی ۲ -->
+            <div class="game-card" style="animation-delay: 0.2s;">
+                <div class="game-image-wrapper">
+                    <img src="C2.jpg" alt="Game 2">
+                </div>
+                <div class="game-info">
+                    <h3> کالاف</h3>
+                    <p> اب بخوری میفهمم ❤️</p>
+                </div>
+            </div>
+
+            <!-- کارت بازی ۳ -->
+            <div class="game-card" style="animation-delay: 0.4s;">
+                <div class="game-image-wrapper">
+                    <img src="C3.jpg" alt="Game 3">
+                </div>
+                <div class="game-info">
+                    <h3> کالاف</h3>
+                    <p>تیم قوی </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
